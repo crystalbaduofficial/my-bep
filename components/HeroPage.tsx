@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Button from "./Button";
+import Link from "next/link";
 
 interface HeroPageProps {
   title: string;
@@ -20,7 +20,6 @@ export default function HeroPage({
   secondaryCtaUrl,
   secondaryCtaText,
 }: HeroPageProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -30,170 +29,158 @@ export default function HeroPage({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const updateCanvasSize = () => {
+    const updateSize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     };
-    updateCanvasSize();
+    updateSize();
 
-    // Generate stars
-    const stars: Array<{ x: number; y: number; size: number; speed: number }> = [];
-    for (let i = 0; i < 150; i++) {
+    const stars: Array<{ x: number; y: number; r: number; v: number }> = [];
+    for (let i = 0; i < 200; i++) {
       stars.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        size: Math.random() * 2,
-        speed: Math.random() * 0.5 + 0.1,
+        r: Math.random() * 1.5,
+        v: Math.random() * 0.3,
       });
     }
 
-    let animationId: number;
-    let time = 0;
+    let frame = 0;
+    let rafId: number;
 
-    const animate = () => {
-      // Background gradient
-      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      gradient.addColorStop(0, "#030712");
-      gradient.addColorStop(0.3, "#071322");
-      gradient.addColorStop(0.7, "#0B1D33");
-      gradient.addColorStop(1, "#030712");
-      ctx.fillStyle = gradient;
+    const render = () => {
+      // Deep space gradient
+      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      grad.addColorStop(0, "#0a0e27");
+      grad.addColorStop(0.5, "#051122");
+      grad.addColorStop(1, "#030712");
+      ctx.fillStyle = grad;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw twinkling stars
-      stars.forEach((star) => {
-        const twinkle = Math.sin(time * star.speed * 0.02 + star.x * 0.0001) * 0.5 + 0.5;
-        ctx.fillStyle = `rgba(255, 255, 255, ${0.2 + twinkle * 0.7})`;
+      // Twinkling stars
+      stars.forEach((s) => {
+        const opacity = 0.3 + 0.6 * Math.abs(Math.sin(frame * 0.01 + s.x * 0.0001));
+        ctx.fillStyle = `rgba(255,255,255,${opacity})`;
         ctx.beginPath();
-        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
         ctx.fill();
       });
 
-      // Draw Earth glow and light
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2 + 50;
-      const earthRadius = Math.min(canvas.width, canvas.height) * 0.2;
+      // Earth position
+      const cx = canvas.width / 2;
+      const cy = (canvas.height * 2) / 3;
+      const r = Math.min(canvas.width, canvas.height) * 0.22;
 
-      // Large outer glow (blue)
-      const outerGlow = ctx.createRadialGradient(
-        centerX,
-        centerY,
-        earthRadius * 0.8,
-        centerX,
-        centerY,
-        earthRadius * 2.5
-      );
-      outerGlow.addColorStop(0, "rgba(59, 130, 246, 0.6)");
-      outerGlow.addColorStop(0.4, "rgba(56, 189, 248, 0.3)");
-      outerGlow.addColorStop(1, "rgba(59, 130, 246, 0)");
-      ctx.fillStyle = outerGlow;
+      // Outer blue glow (brightest)
+      const g1 = ctx.createRadialGradient(cx, cy, r * 0.6, cx, cy, r * 3);
+      g1.addColorStop(0, "rgba(59,130,246,0.8)");
+      g1.addColorStop(0.3, "rgba(59,130,246,0.4)");
+      g1.addColorStop(1, "rgba(59,130,246,0)");
+      ctx.fillStyle = g1;
       ctx.beginPath();
-      ctx.arc(centerX, centerY, earthRadius * 2.5, 0, Math.PI * 2);
+      ctx.arc(cx, cy, r * 3, 0, Math.PI * 2);
       ctx.fill();
 
-      // Mid glow (cyan)
-      const midGlow = ctx.createRadialGradient(
-        centerX,
-        centerY,
-        earthRadius * 0.5,
-        centerX,
-        centerY,
-        earthRadius * 1.8
-      );
-      midGlow.addColorStop(0, "rgba(56, 189, 248, 0.4)");
-      midGlow.addColorStop(0.5, "rgba(59, 130, 246, 0.15)");
-      midGlow.addColorStop(1, "rgba(59, 130, 246, 0)");
-      ctx.fillStyle = midGlow;
+      // Mid cyan glow
+      const g2 = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 2);
+      g2.addColorStop(0, "rgba(56,189,248,0.5)");
+      g2.addColorStop(0.5, "rgba(56,189,248,0.2)");
+      g2.addColorStop(1, "rgba(56,189,248,0)");
+      ctx.fillStyle = g2;
       ctx.beginPath();
-      ctx.arc(centerX, centerY, earthRadius * 1.8, 0, Math.PI * 2);
+      ctx.arc(cx, cy, r * 2, 0, Math.PI * 2);
       ctx.fill();
 
-      // Earth sphere (subtle)
-      const earthGradient = ctx.createRadialGradient(
-        centerX - 30,
-        centerY - 30,
-        0,
-        centerX,
-        centerY,
-        earthRadius
-      );
-      earthGradient.addColorStop(0, "rgba(100, 200, 255, 0.3)");
-      earthGradient.addColorStop(0.7, "rgba(20, 120, 200, 0.15)");
-      earthGradient.addColorStop(1, "rgba(10, 50, 150, 0.05)");
-      ctx.fillStyle = earthGradient;
+      // Earth sphere
+      const g3 = ctx.createRadialGradient(cx - 20, cy - 20, 0, cx, cy, r * 1.1);
+      g3.addColorStop(0, "rgba(100,180,255,0.4)");
+      g3.addColorStop(0.6, "rgba(30,100,180,0.15)");
+      g3.addColorStop(1, "rgba(10,40,100,0.05)");
+      ctx.fillStyle = g3;
       ctx.beginPath();
-      ctx.arc(centerX, centerY, earthRadius, 0, Math.PI * 2);
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.fill();
 
-      // Rotating light beam
-      const rotation = (time * 0.0005) % (Math.PI * 2);
-      const beamX = centerX + Math.cos(rotation) * earthRadius * 1.2;
-      const beamY = centerY + Math.sin(rotation) * earthRadius * 1.2;
-
-      const beamGradient = ctx.createRadialGradient(beamX, beamY, 5, beamX, beamY, 60);
-      beamGradient.addColorStop(0, "rgba(255, 255, 200, 0.8)");
-      beamGradient.addColorStop(1, "rgba(59, 130, 246, 0)");
-      ctx.fillStyle = beamGradient;
+      // Bright rotating accent
+      const angle = (frame * 0.0008) % (Math.PI * 2);
+      const ax = cx + Math.cos(angle - Math.PI / 4) * r * 1.5;
+      const ay = cy + Math.sin(angle - Math.PI / 4) * r * 1.5;
+      const g4 = ctx.createRadialGradient(ax, ay, 2, ax, ay, 80);
+      g4.addColorStop(0, "rgba(255,255,150,0.9)");
+      g4.addColorStop(0.3, "rgba(100,200,255,0.3)");
+      g4.addColorStop(1, "rgba(59,130,246,0)");
+      ctx.fillStyle = g4;
       ctx.beginPath();
-      ctx.arc(beamX, beamY, 60, 0, Math.PI * 2);
+      ctx.arc(ax, ay, 80, 0, Math.PI * 2);
       ctx.fill();
 
-      time++;
-      animationId = requestAnimationFrame(animate);
+      frame++;
+      rafId = requestAnimationFrame(render);
     };
 
-    animate();
+    render();
 
-    const handleResize = () => {
-      updateCanvasSize();
-    };
-
+    const handleResize = () => updateSize();
     window.addEventListener("resize", handleResize);
+
     return () => {
-      cancelAnimationFrame(animationId);
+      cancelAnimationFrame(rafId);
       window.removeEventListener("resize", handleResize);
     };
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className="relative w-full min-h-screen flex items-center justify-center overflow-hidden"
-    >
+    <div className="relative w-full h-screen overflow-hidden bg-dark-1">
       {/* Canvas Background */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
-        style={{ display: "block" }}
-      />
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 
-      {/* Dark Overlay (subtle) */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-dark-1/20 to-dark-1/60" />
+      {/* Overlay Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-dark-1/80" />
 
-      {/* Content - Centered Text */}
-      <div className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div style={{ animation: "fade-in-up 0.8s ease-out" }}>
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white leading-tight">
+      {/* Content Container */}
+      <div className="relative z-20 w-full h-full flex flex-col items-center justify-center px-4">
+        <div
+          className="text-center max-w-3xl"
+          style={{
+            animation: "fade-in-up 1s ease-out",
+          }}
+        >
+          {/* Title */}
+          <h1
+            className="text-6xl md:text-7xl font-black text-white mb-6 leading-tight"
+            style={{
+              fontWeight: 900,
+              letterSpacing: "-0.02em",
+            }}
+          >
             {title}
           </h1>
-          <p className="text-lg md:text-xl text-gray-300 mb-8 leading-relaxed">
+
+          {/* Subtitle */}
+          <p className="text-xl md:text-2xl text-gray-300 mb-12 leading-relaxed font-light">
             {subtitle}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button href={ctaUrl} variant="primary" size="lg">
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <Link
+              href={ctaUrl}
+              className="px-8 py-4 rounded-lg bg-blue-600 text-white font-semibold text-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+            >
               {ctaText}
-            </Button>
+            </Link>
             {secondaryCtaUrl && secondaryCtaText && (
-              <Button href={secondaryCtaUrl} variant="secondary" size="lg">
+              <Link
+                href={secondaryCtaUrl}
+                className="px-8 py-4 rounded-lg bg-cyan-500 text-slate-900 font-semibold text-lg hover:bg-cyan-400 transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
                 {secondaryCtaText}
-              </Button>
+              </Link>
             )}
           </div>
 
-          <p className="text-sm text-gray-500 mt-8">
-            Your data is secure and never shared
-          </p>
+          {/* Security Text */}
+          <p className="text-sm text-gray-500">Your data is secure and never shared</p>
         </div>
       </div>
     </div>
