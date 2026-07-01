@@ -1,174 +1,219 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import Button from "./Button";
+import { ChevronDown, HelpCircle, X } from "lucide-react";
 
-export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
+const ECOSYSTEM_LINKS = [
+  { label: "Learning (LMS)", href: "https://lms.backflowexamprep.com", description: "Your courses and learning path" },
+  { label: "Workspaces", href: "https://workspace.backflowexamprep.com", description: "Team collaboration hub" },
+  { label: "Store", href: "https://store.backflowexamprep.com", description: "Courses and materials" },
+  { label: "Enterprise", href: "https://enterprise.backflowexamprep.com", description: "Organization settings" },
+  { label: "Accounts", href: "https://accounts.backflowexamprep.com", description: "Profile and preferences" },
+];
 
-  const mainLinks = [
-    { label: "Training", href: "https://lms.backflowexamprep.com" },
-    { label: "Practice Exams", href: "https://lms.backflowexamprep.com/practice" },
-    { label: "Simulator", href: "https://lms.backflowexamprep.com/simulator" },
-    { label: "Courses", href: "https://lms.backflowexamprep.com/courses" },
-    { label: "Organizations", href: "/organizations" },
-    { label: "Enterprise", href: "/enterprise" },
-  ];
+const SUPPORT_LINKS = [
+  { label: "Help Center", href: "https://help.backflowexamprep.com", external: true },
+  { label: "Status", href: "https://status.backflowexamprep.com", external: true },
+  { label: "Documentation", href: "https://docs.backflowexamprep.com", external: true },
+];
 
-  const resourceLinks = [
-    { label: "Resources", href: "#" },
-    { label: "Pricing", href: "/pricing" },
-    { label: "Help", href: "https://help.backflowexamprep.com" },
-  ];
+const HELP_LINKS = [
+  { label: "Getting Started", href: "https://help.backflowexamprep.com/docs/getting-started", description: "New to Backflow? Learn the basics." },
+  { label: "SSO & Identity", href: "https://help.backflowexamprep.com/docs/sso", description: "Sign-in, sessions, and security." },
+  { label: "Security", href: "https://help.backflowexamprep.com/docs/security", description: "Best practices and trust guidance." },
+  { label: "Embed / API", href: "https://help.backflowexamprep.com/docs/embed-api", description: "Integrate into your applications." },
+  { label: "White Label", href: "https://help.backflowexamprep.com/docs/white-label", description: "Custom branding and themes." },
+  { label: "Enterprise Admin", href: "https://help.backflowexamprep.com/docs/enterprise", description: "Team management and controls." },
+  { label: "Webhooks", href: "https://help.backflowexamprep.com/docs/webhooks", description: "Real-time event notifications." },
+  { label: "Custom Domains", href: "https://help.backflowexamprep.com/docs/domains", description: "Branded domain setup." },
+  { label: "Support Tickets", href: "https://help.backflowexamprep.com/messages", description: "View your support conversations." },
+  { label: "Troubleshooting", href: "https://help.backflowexamprep.com/troubleshooting", description: "Quick fixes for common issues." },
+  { label: "Contact Support", href: "https://help.backflowexamprep.com/contact", description: "Send us a message anytime." },
+];
 
-  const helpLinks = [
-    { label: "Help Center", href: "https://help.backflowexamprep.com" },
-    { label: "Documentation", href: "https://docs.backflowexamprep.com" },
-    { label: "Report a Problem", href: "https://report.backflowexamprep.com" },
-  ];
+export function Navbar() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [helpDropdownOpen, setHelpDropdownOpen] = useState(false);
 
   return (
-    <nav className="glass sticky top-0 z-50 border-b border-white/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 md:h-20">
-          {/* Logo */}
-          <Link href="/" className="flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">BEP</span>
-              </div>
-              <span className="hidden sm:inline text-white font-semibold text-sm md:text-base">
-                Backflow Exam Prep
-              </span>
-            </div>
+    <>
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-[rgba(5,7,13,.76)] text-white shadow-[0_8px_40px_rgba(0,0,0,.32)] backdrop-blur-[22px]">
+        <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-3 px-4 sm:px-5">
+          <Link href="https://sso.backflowexamprep.com" className="flex items-center gap-3 whitespace-nowrap">
+            <div className="font-bold text-white text-lg">Backflow Exam Prep</div>
           </Link>
 
-          {/* Desktop Menu */}
-          <div className="hidden lg:flex items-center gap-1">
-            {mainLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-3 py-2 text-sm text-gray-300 hover:text-secondary hover:bg-white/5 rounded transition-colors"
+          <div className="ml-auto flex items-center gap-2">
+            <div className="hidden sm:block relative">
+              <button
+                onClick={() => setHelpDropdownOpen(!helpDropdownOpen)}
+                className="rounded-full border border-white/10 bg-white/5 p-2 text-white transition hover:border-white/20 hover:bg-white/10"
+                aria-label="Help"
+                aria-haspopup="menu"
+                aria-expanded={helpDropdownOpen}
               >
-                {link.label}
-              </Link>
-            ))}
-            <div className="w-px h-6 bg-white/10 mx-2" />
-            {resourceLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-3 py-2 text-sm text-gray-300 hover:text-secondary hover:bg-white/5 rounded transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-
-          {/* Right Side: Icons + Auth */}
-          <div className="flex items-center gap-2 md:gap-4">
-            {/* Search Icon */}
-            <button className="hidden md:flex p-2 text-gray-400 hover:text-secondary transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
-
-            {/* Status Dot */}
-            <div className="hidden md:flex items-center gap-1 px-3 py-1 rounded-full bg-green-500/20 border border-green-500/30">
-              <div className="w-2 h-2 rounded-full bg-green-400" />
-              <span className="text-xs text-green-300">Operational</span>
-            </div>
-
-            {/* Help Dropdown */}
-            <div className="relative group hidden md:block">
-              <button className="p-2 text-gray-400 hover:text-secondary transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <HelpCircle size={18} strokeWidth={1.75} />
               </button>
-              <div className="absolute right-0 mt-0 w-40 rounded-lg glass border border-white/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-2 shadow-lg">
-                {helpLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="block px-4 py-2 text-sm text-gray-300 hover:text-secondary hover:bg-white/5 transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
+
+              {helpDropdownOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setHelpDropdownOpen(false)}
+                  />
+                  <div className="absolute top-full right-0 mt-2 w-96 rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(11,19,33,.96),rgba(5,8,14,.92))] shadow-[0_24px_120px_rgba(0,0,0,.5)] z-50 backdrop-blur-xl p-4 max-h-96 overflow-y-auto">
+                    <div className="space-y-1">
+                      {HELP_LINKS.map((link) => (
+                        <a
+                          key={link.href}
+                          href={link.href}
+                          onClick={() => setHelpDropdownOpen(false)}
+                          className="block rounded-xl px-3 py-2.5 text-sm transition hover:bg-white/8"
+                        >
+                          <div className="text-white font-medium">{link.label}</div>
+                          <div className="text-xs text-white/50 mt-0.5">{link.description}</div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
-            {/* Auth Buttons */}
-            <Button
-              variant="ghost"
-              size="sm"
+            <Link
               href="https://sso.backflowexamprep.com/sign-in"
+              className="hidden sm:inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10"
             >
               Sign In
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              href="https://sso.backflowexamprep.com/sign-up"
-            >
-              Create Account
-            </Button>
+            </Link>
 
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="lg:hidden w-8 h-8 flex flex-col justify-center gap-1.5"
+            <Link
+              href="https://sso.backflowexamprep.com/sign-up"
+              className="hidden sm:inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm text-white transition hover:bg-blue-700"
             >
-              <span
-                className={`h-0.5 bg-white transition-all ${
-                  isOpen ? "rotate-45 translate-y-2" : ""
-                }`}
-              />
-              <span
-                className={`h-0.5 bg-white transition-all ${
-                  isOpen ? "opacity-0" : ""
-                }`}
-              />
-              <span
-                className={`h-0.5 bg-white transition-all ${
-                  isOpen ? "-rotate-45 -translate-y-2" : ""
-                }`}
-              />
+              Sign Up
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => setMobileOpen((value) => !value)}
+              aria-expanded={mobileOpen}
+              aria-label="Open menu"
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-2 text-sm text-white transition hover:bg-white/5 min-[1024px]:hidden"
+            >
+              Menu
+              <ChevronDown size={16} className={`transition-transform duration-300 ${mobileOpen ? "rotate-180" : ""}`} />
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Mobile Menu */}
-        {isOpen && (
-          <div className="lg:hidden pb-4 border-t border-white/10 mt-4 pt-4 space-y-2">
-            {mainLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="block px-4 py-2 text-sm text-gray-300 hover:text-secondary transition-colors"
-                onClick={() => setIsOpen(false)}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-xl min-[1024px]:hidden" role="dialog" aria-modal="true" onClick={() => setMobileOpen(false)}>
+          <div
+            onClick={(event) => event.stopPropagation()}
+            className="ml-auto flex h-[100dvh] w-full max-w-[420px] flex-col border-l border-white/10 bg-[linear-gradient(180deg,rgba(5,8,14,.985),rgba(5,8,14,.955))] shadow-[0_30px_120px_rgba(0,0,0,.78)]"
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-white/10 px-4 py-4">
+              <div className="min-w-0">
+                <div className="truncate text-[13px] font-semibold tracking-[0.14em] text-white">
+                  Backflow Exam Prep
+                </div>
+                <div className="text-[10px] uppercase tracking-[0.24em] text-cyan-100/55">
+                  Public Marketing
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-full border border-white/10 bg-white/5 p-2 text-white transition hover:bg-white/10"
+                aria-label="Close menu"
               >
-                {link.label}
-              </Link>
-            ))}
-            <div className="h-px bg-white/10 my-2" />
-            {resourceLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="block px-4 py-2 text-sm text-gray-300 hover:text-secondary transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+              <div className="space-y-3">
+                <div className="rounded-[24px] border border-white/10 bg-white/[0.025] p-3">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/60">
+                    Ecosystem
+                  </div>
+                  <div className="mt-3 space-y-1">
+                    {ECOSYSTEM_LINKS.map((link) => (
+                      <a
+                        key={link.href}
+                        href={link.href}
+                        onClick={() => setMobileOpen(false)}
+                        className="block rounded-2xl px-3 py-3 text-sm text-white/82 transition hover:bg-white/8 hover:text-white"
+                      >
+                        <div>{link.label}</div>
+                        <div className="mt-1 text-xs text-white/48">{link.description}</div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-[24px] border border-white/10 bg-white/[0.025] p-3">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/60">
+                    Help
+                  </div>
+                  <div className="mt-3 space-y-1">
+                    {HELP_LINKS.map((link) => (
+                      <a
+                        key={link.href}
+                        href={link.href}
+                        onClick={() => setMobileOpen(false)}
+                        className="block rounded-2xl px-3 py-3 text-sm text-white/82 transition hover:bg-white/8 hover:text-white"
+                      >
+                        <div>{link.label}</div>
+                        <div className="mt-1 text-xs text-white/48">{link.description}</div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-[24px] border border-white/10 bg-white/[0.025] p-3">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/60">
+                    Support
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {SUPPORT_LINKS.map((link) => (
+                      <a
+                        key={link.href}
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-cyan-200 transition hover:bg-white/10"
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Link
+                    href="https://sso.backflowexamprep.com/sign-in"
+                    onClick={() => setMobileOpen(false)}
+                    className="block rounded-full border border-white/10 bg-white/5 px-4 py-2 text-center text-sm text-white transition hover:bg-white/10"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="https://sso.backflowexamprep.com/sign-up"
+                    onClick={() => setMobileOpen(false)}
+                    className="block rounded-full bg-blue-600 px-4 py-2 text-center text-sm text-white transition hover:bg-blue-700"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
-        )}
-      </div>
-    </nav>
+        </div>
+      )}
+    </>
   );
 }
