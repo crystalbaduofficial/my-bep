@@ -4,7 +4,7 @@ import { getSession } from "@/lib/auth/session";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { courseId: string } }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
   try {
     const session = await getSession();
@@ -19,7 +19,7 @@ export async function POST(
       return NextResponse.json({ error: "Missing mediaId" }, { status: 400 });
     }
 
-    const result = await attachCourseCover(params.courseId, mediaId, session.user.id);
+    const result = await attachCourseCover((await params).courseId, mediaId, session.user.id);
 
     return NextResponse.json(result);
   } catch (error) {

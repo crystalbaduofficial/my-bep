@@ -17,10 +17,10 @@ export async function GET(request: NextRequest) {
       [session.user.id]
     );
 
-    const license = licenseResult.rows[0] || null;
+    const license: any = licenseResult.rows[0] || null;
 
     // Get invoices from Stripe if subscription exists
-    let invoices = [];
+    let invoices: Array<unknown> = [];
     if (license?.stripe_subscription_id) {
       try {
         const stripeInvoices = await stripe.invoices.list({

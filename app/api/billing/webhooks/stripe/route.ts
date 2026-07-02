@@ -3,9 +3,17 @@ import Stripe from "stripe";
 import { pool } from "@/lib/db";
 import { logAuditEvent } from "@/lib/audit/logger";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2026-06-24.dahlia",
+    })
+  : null;
 
 export async function POST(request: NextRequest) {
+  if (!stripe || !process.env.STRIPE_WEBHOOK_SECRET) {
+    return NextResponse.json({ error: "Stripe not configured" }, { status: 503 });
+  }
+
   const body = await request.text();
   const signature = request.headers.get("stripe-signature") || "";
 
@@ -91,12 +99,16 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
 
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const status = subscription.status === "active" ? "active" : "inactive";
+  const currentPeriodEnd =
+    typeof (subscription as any).current_period_end === "number"
+      ? new Date((subscription as any).current_period_end * 1000)
+      : null;
 
   await pool.query(
     `UPDATE shop.license
      SET status = $1, current_period_end = $2
      WHERE stripe_subscription_id = $3`,
-    [status, new Date(subscription.current_period_end * 1000), subscription.id]
+    [status, currentPeriodEnd, subscription.id]
   );
 }
 
@@ -110,7 +122,7 @@ async function handleSubscriptionCanceled(subscription: Stripe.Subscription) {
 }
 
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
-  const subscriptionId = invoice.subscription as string;
+  const subscriptionId = (invoice as any).subscription as string;
 
   const result = await pool.query(
     `SELECT user_id FROM shop.license WHERE stripe_subscription_id = $1`,

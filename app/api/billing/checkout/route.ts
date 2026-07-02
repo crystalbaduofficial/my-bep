@@ -30,6 +30,10 @@ export async function POST(request: NextRequest) {
       returnUrl
     );
 
+    if (!stripeSession) {
+      return NextResponse.json({ error: "Failed to create checkout session" }, { status: 500 });
+    }
+
     // Log audit event
     await logAuditEvent({
       actor_id: session.user.id,

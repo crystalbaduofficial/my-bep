@@ -7,44 +7,85 @@ export default function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative z-10 min-h-screen flex items-center justify-center px-4 py-20">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="mb-6 inline-block px-4 py-2 rounded-full bg-blue-600/10 border border-blue-400/30">
-            <p className="text-sm font-semibold text-blue-300">Professional Backflow Training</p>
+      <section className="relative z-10 overflow-hidden px-4 pt-12 pb-20 md:pt-20 md:pb-28">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[1.1fr_.9fr]">
+          <div className="home-hero-panel space-y-8">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-200">
+              Professional Backflow Training
+            </div>
+
+            <div className="space-y-6">
+              <h1 className="max-w-3xl text-5xl font-semibold tracking-tight text-white md:text-7xl">
+                Backflow training, practice, and simulation in one polished platform.
+              </h1>
+              <p className="max-w-2xl text-lg leading-8 text-slate-300 md:text-xl">
+                Guided lessons, realistic simulator practice, practice exams, and organization tools
+                in a single launch-ready experience.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <a
+                href="https://sso.backflowexamprep.com/sign-up"
+                className="btn-home-primary"
+              >
+                Start Learning
+              </a>
+              <Link href="/learning-center" className="btn-home-secondary">
+                Explore Platform
+              </Link>
+              <a
+                href="https://shop.backflowexamprep.com/pricing"
+                className="btn-home-tertiary"
+              >
+                View Plans
+              </a>
+            </div>
+
+            <div className="flex flex-wrap gap-3 text-sm text-slate-400">
+              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
+                No credit card required
+              </span>
+              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
+                Free 7-day trial
+              </span>
+              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
+                Mobile-ready learning
+              </span>
+            </div>
           </div>
 
-          <h1 className="heading-1 mb-6">
-            Backflow training, practice, and simulation in one modern platform.
-          </h1>
+          <div className="home-hero-art">
+            <div className="home-hero-card">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-cyan-200/70">
+                    Product Preview
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold text-white">
+                    Study flow that feels finished
+                  </h2>
+                </div>
+                <div className="rounded-full border border-cyan-400/25 bg-cyan-400/10 px-3 py-1 text-xs text-cyan-100">
+                  Live
+                </div>
+              </div>
 
-          <p className="subtext max-w-2xl mx-auto mb-12">
-            Prepare for certification with guided lessons, practice exams, simulator training, and tools built for students, instructors, and organizations.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <a
-              href="https://sso.backflowexamprep.com/sign-up"
-              className="px-8 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-            >
-              Start Learning
-            </a>
-            <Link
-              href="/learning-center"
-              className="px-8 py-3 rounded-lg border border-white/20 text-white font-semibold hover:border-white/40 hover:bg-white/5 transition-all duration-300"
-            >
-              Explore Platform
-            </Link>
-            <a
-              href="https://shop.backflowexamprep.com/pricing"
-              className="px-8 py-3 rounded-lg bg-white/10 text-white font-semibold hover:bg-white/20 transition-all duration-300"
-            >
-              View Plans
-            </a>
+              <div className="mt-8 grid gap-4">
+                {[
+                  ["Learning Center", "Structured lessons, notes, and review."],
+                  ["Simulator", "Scenario practice with realistic outcomes."],
+                  ["Practice Exams", "Timed readiness checks and feedback."],
+                  ["Organizations", "Team controls, reporting, and training."],
+                ].map(([title, desc]) => (
+                  <div key={title} className="rounded-2xl border border-white/10 bg-black/30 px-5 py-4">
+                    <p className="text-lg font-medium text-white">{title}</p>
+                    <p className="mt-1 text-sm text-slate-400">{desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-
-          <p className="text-sm text-gray-500">
-            No credit card required • Free 7-day trial available
-          </p>
         </div>
       </section>
 

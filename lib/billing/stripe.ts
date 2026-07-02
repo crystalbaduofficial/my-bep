@@ -1,8 +1,12 @@
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2023-10-16",
-});
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+
+export const stripe = stripeSecretKey
+  ? new Stripe(stripeSecretKey, {
+      apiVersion: "2026-06-24.dahlia",
+    })
+  : (null as unknown as Stripe);
 
 export const PLANS = {
   free: {
@@ -23,7 +27,7 @@ export const PLANS = {
   student: {
     id: "student",
     name: "Student",
-    price: 2999, // $29.99/month
+    price: 2999,
     stripe_price_id: "price_student_monthly",
     features: [
       "Everything in Free",
@@ -41,7 +45,7 @@ export const PLANS = {
   student_pro: {
     id: "student_pro",
     name: "Student Pro",
-    price: 4999, // $49.99/month
+    price: 4999,
     stripe_price_id: "price_student_pro_monthly",
     features: [
       "Everything in Student",
@@ -58,7 +62,7 @@ export const PLANS = {
   instructor: {
     id: "instructor",
     name: "Instructor",
-    price: 9999, // $99.99/month
+    price: 9999,
     stripe_price_id: "price_instructor_monthly",
     features: [
       "Everything in Student Pro",
@@ -76,7 +80,7 @@ export const PLANS = {
   organization: {
     id: "organization",
     name: "Organization",
-    price: 29999, // $299.99/month
+    price: 29999,
     stripe_price_id: "price_organization_monthly",
     features: [
       "Everything in Instructor",
@@ -94,7 +98,7 @@ export const PLANS = {
   enterprise: {
     id: "enterprise",
     name: "Enterprise",
-    price: 99999, // $999.99/month (custom)
+    price: 99999,
     features: [
       "Everything in Organization",
       "Dedicated support",
@@ -115,10 +119,10 @@ export async function createCheckoutSession(
   email: string,
   planId: string,
   workspaceId?: string
-): Promise<string | null> {
+): Promise<Stripe.Checkout.Session | null> {
   const plan = (PLANS as any)[planId];
-  if (!plan || plan.price === 0) {
-    return null; // Free plans don't need checkout
+  if (!plan || plan.price === 0 || !stripe) {
+    return null;
   }
 
   try {
@@ -141,7 +145,7 @@ export async function createCheckoutSession(
       },
     });
 
-    return session.url;
+    return session;
   } catch (error) {
     console.error("Checkout creation error:", error);
     return null;
@@ -150,6 +154,7 @@ export async function createCheckoutSession(
 
 export async function getCheckoutSession(sessionId: string) {
   try {
+    if (!stripe) return null;
     return await stripe.checkout.sessions.retrieve(sessionId);
   } catch (error) {
     console.error("Session retrieval error:", error);
@@ -159,6 +164,7 @@ export async function getCheckoutSession(sessionId: string) {
 
 export async function cancelSubscription(subscriptionId: string) {
   try {
+    if (!stripe) return null;
     return await stripe.subscriptions.cancel(subscriptionId);
   } catch (error) {
     console.error("Cancellation error:", error);
@@ -166,11 +172,9 @@ export async function cancelSubscription(subscriptionId: string) {
   }
 }
 
-export function validateWebhookSignature(
-  body: string,
-  signature: string
-): boolean {
+export function validateWebhookSignature(body: string, signature: string): boolean {
   try {
+    if (!stripe) return false;
     stripe.webhooks.constructEvent(
       body,
       signature,
@@ -184,6 +188,7 @@ export function validateWebhookSignature(
 
 export async function getSubscription(subscriptionId: string) {
   try {
+    if (!stripe) return null;
     return await stripe.subscriptions.retrieve(subscriptionId);
   } catch (error) {
     console.error("Subscription retrieval error:", error);

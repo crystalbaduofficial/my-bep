@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { verifySession } from '@/lib/auth/verify-session';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await verifySession(request);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
        WHERE c.id = $1 AND (c.created_by = $2 OR EXISTS(
          SELECT 1 FROM lms.enrollment e WHERE e.course_id = c.id AND e.user_id = $2
        ))`,
-      [params.id, session.userId]
+      [(await params).id, session.userId]
     );
 
     if (result.rows.length === 0) {
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await verifySession(request);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -35,7 +35,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const courseResult = await db.query(
       'SELECT created_by FROM lms.course WHERE id = $1',
-      [params.id]
+      [(await params).id]
     );
 
     if (courseResult.rows.length === 0 || courseResult.rows[0].created_by !== session.userId) {
@@ -49,7 +49,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         cover_url = COALESCE($4, cover_url),
         updated_at = NOW()
        WHERE id = $5 RETURNING *`,
-      [title, description, status, cover_url, params.id]
+      [title, description, status, cover_url, (await params).id]
     );
 
     return NextResponse.json(result.rows[0]);
@@ -59,21 +59,21 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await verifySession(request);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
     const courseResult = await db.query(
       'SELECT created_by FROM lms.course WHERE id = $1',
-      [params.id]
+      [(await params).id]
     );
 
     if (courseResult.rows.length === 0 || courseResult.rows[0].created_by !== session.userId) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    await db.query('DELETE FROM lms.course WHERE id = $1', [params.id]);
+    await db.query('DELETE FROM lms.course WHERE id = $1', [(await params).id]);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('DELETE course error:', error);

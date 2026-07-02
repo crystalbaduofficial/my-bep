@@ -6,7 +6,7 @@ import crypto from "crypto";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
@@ -27,7 +27,7 @@ export async function POST(
     // Get workspace
     const workspaceResult = await pool.query(
       "SELECT id FROM workspaces.workspace WHERE slug = $1",
-      [params.slug]
+      [(await params).slug]
     );
 
     if (workspaceResult.rows.length === 0) {
